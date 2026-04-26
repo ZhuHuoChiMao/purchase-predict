@@ -1,5 +1,6 @@
 substitutions:
   _REGION: europe-west1
+  _ZONE: europe-west1-b
   _CLUSTER_NAME: purchase-predict-cluster
   _ARTIFACT_REPOSITORY: cloud-run-source-deploy
   _IMAGE_NAME: purchase-predict-api
@@ -43,7 +44,7 @@ steps:
     args:
       - -ceu
       - |
-        gcloud container clusters get-credentials ${_CLUSTER_NAME} --region ${_REGION}
+        gcloud container clusters get-credentials ${_CLUSTER_NAME} --zone ${_ZONE}
         kubectl apply -f k8s/secret.example.yaml
         kubectl apply -f k8s/deployment.yaml
         kubectl apply -f k8s/service.yaml
