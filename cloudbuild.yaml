@@ -55,3 +55,6 @@ images:
   - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/${_IMAGE_NAME}:$SHORT_SHA
 
 timeout: 1200s
+
+options:
+  logging: CLOUD_LOGGING_ONLY
