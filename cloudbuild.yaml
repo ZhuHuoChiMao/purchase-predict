@@ -49,7 +49,7 @@ steps:
           --port 8080 \
           --allow-unauthenticated \
           --set-env-vars MLFLOW_TRACKING_URI=${_MLFLOW_TRACKING_URI},PURCHASE_MODEL_URI=${_PURCHASE_MODEL_URI} \
-          $SERVICE_ACCOUNT_ARGS
+          $$SERVICE_ACCOUNT_ARGS
 
 images:
   - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/${_IMAGE_NAME}:$SHORT_SHA
