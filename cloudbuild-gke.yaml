@@ -49,6 +49,8 @@ steps:
         kubectl apply -f k8s/deployment.yaml
         kubectl apply -f k8s/service.yaml
         kubectl apply -f k8s/hpa.yaml
+        kubectl set image deployment/purchase-predict-api \
+          api=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/${_IMAGE_NAME}:$SHORT_SHA
         kubectl rollout status deployment/purchase-predict-api --timeout=300s
 
 images:
