@@ -1,0 +1,57 @@
+substitutions:
+  _REGION: europe-west1
+  _CLUSTER_NAME: purchase-predict-cluster
+  _ARTIFACT_REPOSITORY: cloud-run-source-deploy
+  _IMAGE_NAME: purchase-predict-api
+
+steps:
+  - id: ci
+    name: python:3.12-slim
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        pip install uv
+        uv run --extra dev ruff check src tests
+        uv run --extra dev python -m pytest -q -o addopts=''
+
+  - id: build-image
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/${_IMAGE_NAME}:$SHORT_SHA
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/${_IMAGE_NAME}:latest
+      - .
+
+  - id: push-sha
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/${_IMAGE_NAME}:$SHORT_SHA
+
+  - id: push-latest
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/${_IMAGE_NAME}:latest
+
+  - id: deploy-gke
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        gcloud container clusters get-credentials ${_CLUSTER_NAME} --region ${_REGION}
+        kubectl apply -f k8s/secret.example.yaml
+        kubectl apply -f k8s/deployment.yaml
+        kubectl apply -f k8s/service.yaml
+        kubectl apply -f k8s/hpa.yaml
+        kubectl rollout status deployment/purchase-predict-api --timeout=300s
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/${_IMAGE_NAME}:$SHORT_SHA
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/${_IMAGE_NAME}:latest
+
+timeout: 1200s

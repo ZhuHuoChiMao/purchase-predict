@@ -1,0 +1,5 @@
+mlflow_enabled: true
+mlflow_tracking_uri: http://104.197.20.252:5000
+mlflow_experiment_name: purchase_predict_gcs
+mlflow_registered_model_name: purchase_predict
+mlflow_model_alias: production

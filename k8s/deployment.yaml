@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: purchase-predict-api
+  labels:
+    app: purchase-predict-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: purchase-predict-api
+  template:
+    metadata:
+      labels:
+        app: purchase-predict-api
+    spec:
+      containers:
+        - name: api
+          image: europe-west1-docker.pkg.dev/project-3139c4ea-e811-47b0-aad/cloud-run-source-deploy/purchase-predict-api:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MLFLOW_TRACKING_URI
+              valueFrom:
+                secretKeyRef:
+                  name: purchase-predict-secrets
+                  key: mlflow-tracking-uri
+            - name: PURCHASE_MODEL_URI
+              value: models:/purchase_predict@production
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
